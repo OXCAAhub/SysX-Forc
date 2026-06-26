@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYSX-FORC - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="profile-section">
+        <video id="profileVideo" autoplay muted loop playsinline>
+          <source src="https://www.gobox.my.id/file/Ctw42iB3HzQZ.mp4" type="video/mp4">
+        </video>
+        <h2 id="userName">Dale Andrews</h2>
+        <span class="vip-badge">👑 VIP FORCE</span>
+      </div>
+      <nav>
+        <ul>
+          <li class="active" data-menu="dashboard">📊 Dashboard</li>
+          <li data-menu="executed">⚡ Executed</li>
+          <li data-menu="sender">📱 Sender</li>
+          <li data-menu="logout" id="logoutBtn">🚪 Logout</li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- DASHBOARD -->
+      <div id="menu-dashboard" class="menu-content active">
+        <h1>🔥 SYSX-FORC ACTIVE</h1>
+        <div class="stats">
+          <div class="stat-card">Status WA: <span id="waStatus">OFFLINE</span></div>
+          <div class="stat-card">Target Terserang: <span id="attackCount">0</span></div>
+        </div>
+      </div>
+
+      <!-- EXECUTED -->
+      <div id="menu-executed" class="menu-content">
+        <h2>⚡ EXECUTED – FORCECLOSE BUG</h2>
+        <p>Masukkan nomor target (62xxx):</p>
+        <input type="text" id="targetNumber" placeholder="6289876543210">
+        <button onclick="executeForce()">🔥 EKSEKUSI FORCECLOSE!</button>
+        <div id="execResult"></div>
+      </div>
+
+      <!-- SENDER / PAIRING -->
+      <div id="menu-sender" class="menu-content">
+        <h2>📱 SENDER – PAIRING DEVICE</h2>
+        <p>Masukkan nomor sender (62xxx):</p>
+        <input type="text" id="senderNumber" placeholder="6281234567890">
+        <button onclick="pairDevice()">🔗 PAIRING</button>
+        <div id="pairResult"></div>
+        <p style="margin-top:20px;">Perangkat tertaut: Ubuntu, Linux, Windows, MacOS</p>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
