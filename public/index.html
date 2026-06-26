@@ -4,7 +4,162 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SYSX-FORC - Login</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
+    body { background: #0a0a0a; overflow: hidden; height: 100vh; }
+    
+    .login-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .login-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.25) saturate(1.5);
+      z-index: 0;
+    }
+    
+    .login-overlay {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 50px 60px;
+      border: 2px solid #ff0000;
+      border-radius: 20px;
+      box-shadow: 0 0 60px rgba(255, 0, 0, 0.3);
+      max-width: 450px;
+      width: 90%;
+    }
+    
+    .login-overlay h1 {
+      font-size: 3.5rem;
+      color: #ff0000;
+      text-shadow: 0 0 30px #ff0000, 0 0 60px #ff000066;
+      margin-bottom: 5px;
+      letter-spacing: 4px;
+    }
+    
+    .login-overlay p {
+      color: #ff6666;
+      font-size: 1rem;
+      margin-bottom: 25px;
+      letter-spacing: 2px;
+    }
+    
+    .login-overlay input {
+      padding: 16px 20px;
+      width: 100%;
+      background: #1a1a1a;
+      border: 2px solid #ff3300;
+      color: #fff;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+      box-sizing: border-box;
+    }
+    
+    .login-overlay input:focus {
+      border-color: #ff0000;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+    }
+    
+    .login-overlay input::placeholder {
+      color: #666;
+    }
+    
+    .login-overlay button {
+      padding: 16px 40px;
+      background: #ff0000;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 10px;
+      margin-top: 20px;
+      width: 100%;
+      transition: 0.3s;
+      letter-spacing: 2px;
+    }
+    
+    .login-overlay button:hover {
+      background: #cc0000;
+      transform: scale(1.02);
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    }
+    
+    .login-overlay button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    #loginError {
+      color: #ff0000;
+      margin-top: 15px;
+      font-weight: bold;
+      display: none;
+      text-shadow: 0 0 10px #ff000066;
+    }
+    
+    /* ANIMASI LOGIN */
+    #loginAnim {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      background: #000;
+    }
+    
+    #loginAnim video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    #loginAnim .anim-text {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 22px;
+      text-shadow: 0 0 30px #ff0000;
+      letter-spacing: 3px;
+      animation: blink 0.8s infinite alternate;
+    }
+    
+    @keyframes blink {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 500px) {
+      .login-overlay {
+        padding: 30px 25px;
+      }
+      .login-overlay h1 {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
@@ -16,22 +171,61 @@
       <p>Forceclose Brutal System</p>
       <form id="loginForm">
         <input type="password" id="passwordInput" placeholder="Password..." required>
-        <button type="submit">MASUK!!</button>
+        <button type="submit" id="loginBtn">MASUK!!</button>
       </form>
-      <div id="loginError" style="color:#ff0000;display:none;margin-top:15px;font-weight:bold;">PASSWORD SALAH, KONTOL!</div>
+      <div id="loginError">❌ PASSWORD SALAH, KONTOL!</div>
     </div>
   </div>
   
   <!-- ANIMASI LOGIN -->
-  <div id="loginAnim" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:#000;">
-    <video id="animVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;">
+  <div id="loginAnim">
+    <video id="animVideo" autoplay muted playsinline>
       <source src="https://www.gobox.my.id/file/Ctw42iB3HzQZ.mp4" type="video/mp4">
     </video>
-    <div style="position:absolute;bottom:30px;left:0;width:100%;text-align:center;color:#fff;font-size:24px;text-shadow:0 0 20px #ff0000;">
-      ⚡ SEDANG MEMASUKI SISTEM...
-    </div>
+    <div class="anim-text">⚡ SEDANG MEMASUKI SISTEM...</div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // ========== LOGIN LOGIC ==========
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('passwordInput').value;
+      const btn = document.getElementById('loginBtn');
+      const errorEl = document.getElementById('loginError');
+      
+      errorEl.style.display = 'none';
+      btn.textContent = 'PROSES...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          // TAMPILKAN ANIMASI
+          document.getElementById('loginAnim').style.display = 'block';
+          document.getElementById('animVideo').play().catch(() => {});
+          
+          setTimeout(() => {
+            window.location.replace('/dashboard.html');
+          }, 4000);
+        } else {
+          errorEl.style.display = 'block';
+          errorEl.textContent = '❌ PASSWORD SALAH, KONTOL!';
+          btn.textContent = 'MASUK!!';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        errorEl.style.display = 'block';
+        errorEl.textContent = '❌ ERROR: ' + err.message;
+        btn.textContent = 'MASUK!!';
+        btn.disabled = false;
+      }
+    });
+  </script>
 </body>
-</html>
+  </html>
