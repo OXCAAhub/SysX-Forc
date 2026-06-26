@@ -10,28 +10,62 @@
   }
 })();
 
-// ========== LOGIN ==========
+// ========== LOGIN FIX ==========
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const password = document.getElementById('passwordInput').value;
-  const res = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password })
-  });
-  const data = await res.json();
-  if (data.success) {
-    // TAMPILKAN ANIMASI LOGIN
-    document.getElementById('loginAnim').style.display = 'block';
-    document.getElementById('animVideo').play();
-    setTimeout(() => {
-      window.location.href = '/dashboard.html';
-    }, 5000); // 5 detik animasi
-  } else {
+  const btn = document.querySelector('#loginForm button');
+  btn.textContent = 'PROSES...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      // TAMPILKAN ANIMASI
+      const animDiv = document.getElementById('loginAnim');
+      animDiv.style.display = 'block';
+      const animVideo = document.getElementById('animVideo');
+      animVideo.play().catch(() => {});
+      
+      // REDIRECT SETELAH 4 DETIK PAKAI window.location.replace
+      setTimeout(() => {
+        window.location.replace('/dashboard.html');
+      }, 4000);
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginError').textContent = '❌ PASSWORD SALAH, KONTOL!';
+      btn.textContent = 'MASUK!!';
+      btn.disabled = false;
+    }
+  } catch (err) {
     document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginError').textContent = '❌ ERROR: ' + err.message;
+    btn.textContent = 'MASUK!!';
+    btn.disabled = false;
   }
 });
 
+// ========== CEK SESSION DI DASHBOARD ==========
+(async function checkSession() {
+  try {
+    const res = await fetch('/api/check-session');
+    const data = await res.json();
+    if (!data.loggedIn) {
+      window.location.replace('/');
+    } else {
+      document.getElementById('userName').textContent = data.user || 'Dale Andrews';
+      updateStatus();
+    }
+  } catch (e) {
+    window.location.replace('/');
+  }
+})();
 // ========== NAVIGASI ==========
 function loadMenu(menu) {
   document.querySelectorAll('.menu-content').forEach(el => el.classList.remove('active'));
