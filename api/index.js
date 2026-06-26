@@ -11,14 +11,16 @@ const PASSWORD = process.env.PASSWORD || 'force$$$';
 
 // ========== MIDDLEWARE ==========
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public')));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'sysx-forc-secret',
   resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 3600000 * 24 }
+  saveUninitialized: true, // <-- UBAH JADI TRUE
+  cookie: { 
+    maxAge: 3600000 * 24,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // AUTO TRUE DI VERCEL
+    sameSite: 'lax'
+  }
 }));
 
 // ========== SESSION WHATSAPP ==========
