@@ -1,0 +1,19 @@
+{
+  "name": "sysx-forc",
+  "version": "1.0.0",
+  "description": "SYSX-FORC - WhatsApp Forceclose Bug Tools",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "vercel-build": "echo Build selesai"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "qrcode-terminal": "^0.12.0",
+    "pino": "^8.17.2"
+  }
+}
