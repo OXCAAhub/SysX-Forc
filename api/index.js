@@ -59,6 +59,25 @@ async function startWhatsAppSession() {
   }
 }
 
+// ========== STATIC ROUTES ==========
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.get('/dashboard.html', (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.redirect('/');
+  }
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
+
+// ========== LOGOUT ==========
+app.get('/api/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
+});
+
 // ========== ROUTE LOGIN ==========
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
