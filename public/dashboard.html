@@ -4,7 +4,192 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SYSX-FORC - Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
+    body { background: #0a0a0a; color: #ff3300; overflow: hidden; height: 100vh; }
+    
+    .dashboard { display: flex; height: 100vh; }
+    
+    .sidebar {
+      width: 280px;
+      background: #111;
+      border-right: 2px solid #ff0000;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    
+    .sidebar .profile-section {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .sidebar .profile-section video {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid #ff0000;
+      object-fit: cover;
+      box-shadow: 0 0 30px rgba(255,0,0,0.3);
+    }
+    
+    .sidebar .profile-section h2 {
+      color: #fff;
+      margin-top: 10px;
+      font-size: 1.2rem;
+    }
+    
+    .sidebar .profile-section .vip-badge {
+      background: #ff0000;
+      padding: 2px 15px;
+      border-radius: 20px;
+      font-size: 11px;
+      color: #fff;
+      display: inline-block;
+      margin-top: 5px;
+    }
+    
+    .sidebar nav ul {
+      list-style: none;
+      flex: 1;
+    }
+    
+    .sidebar nav ul li {
+      padding: 14px 18px;
+      margin: 5px 0;
+      background: #1a1a1a;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      transition: 0.3s;
+      color: #888;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.95rem;
+    }
+    
+    .sidebar nav ul li:hover {
+      background: #2a0000;
+      color: #ff0000;
+    }
+    
+    .sidebar nav ul li.active {
+      background: #2a0000;
+      border-left: 3px solid #ff0000;
+      color: #ff0000;
+    }
+    
+    .main-content {
+      flex: 1;
+      padding: 30px 40px;
+      overflow-y: auto;
+      background: #0d0d0d;
+    }
+    
+    .menu-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    .menu-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .menu-content h1, .menu-content h2 {
+      color: #ff0000;
+      text-shadow: 0 0 20px rgba(255,0,0,0.3);
+      margin-bottom: 20px;
+    }
+    
+    .menu-content p {
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin: 20px 0 30px 0;
+    }
+    
+    .stat-card {
+      background: #1a1a1a;
+      padding: 20px 25px;
+      border-radius: 12px;
+      border: 1px solid #ff3300;
+      flex: 1;
+      color: #fff;
+      font-size: 1rem;
+    }
+    
+    .stat-card span {
+      color: #ff3300;
+      font-weight: bold;
+    }
+    
+    input, select {
+      padding: 14px 18px;
+      background: #1a1a1a;
+      border: 2px solid #ff3300;
+      color: #fff;
+      border-radius: 10px;
+      width: 100%;
+      margin: 8px 0 15px 0;
+      font-size: 1rem;
+      box-sizing: border-box;
+      outline: none;
+    }
+    
+    input:focus, select:focus {
+      border-color: #ff0000;
+      box-shadow: 0 0 15px rgba(255,0,0,0.2);
+    }
+    
+    button {
+      background: #ff0000;
+      color: #fff;
+      border: none;
+      padding: 14px 30px;
+      cursor: pointer;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: 0.3s;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    button:hover {
+      background: #cc0000;
+      transform: scale(1.02);
+      box-shadow: 0 0 25px rgba(255,0,0,0.4);
+    }
+    
+    #execResult, #pairResult {
+      margin-top: 15px;
+      padding: 12px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      border: 1px solid #333;
+      color: #0f0;
+      font-weight: bold;
+    }
+    
+    #execResult.error, #pairResult.error {
+      color: #ff0000;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; padding: 15px; }
+      .main-content { padding: 20px; }
+      .stats { flex-direction: column; }
+      .sidebar .profile-section video { width: 80px; height: 80px; }
+    }
+  </style>
 </head>
 <body>
   <div class="dashboard">
@@ -27,7 +212,7 @@
       </nav>
     </div>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <div class="main-content">
       <!-- DASHBOARD -->
       <div id="menu-dashboard" class="menu-content active">
@@ -36,6 +221,7 @@
           <div class="stat-card">Status WA: <span id="waStatus">OFFLINE</span></div>
           <div class="stat-card">Target Terserang: <span id="attackCount">0</span></div>
         </div>
+        <p style="color:#666;margin-top:20px;">Gunakan menu di samping untuk eksekusi atau pairing.</p>
       </div>
 
       <!-- EXECUTED -->
@@ -47,17 +233,109 @@
         <div id="execResult"></div>
       </div>
 
-      <!-- SENDER / PAIRING -->
+      <!-- SENDER -->
       <div id="menu-sender" class="menu-content">
         <h2>📱 SENDER – PAIRING DEVICE</h2>
         <p>Masukkan nomor sender (62xxx):</p>
         <input type="text" id="senderNumber" placeholder="6281234567890">
         <button onclick="pairDevice()">🔗 PAIRING</button>
         <div id="pairResult"></div>
-        <p style="margin-top:20px;">Perangkat tertaut: Ubuntu, Linux, Windows, MacOS</p>
+        <p style="color:#666;margin-top:15px;">Perangkat tertaut: Ubuntu, Linux, Windows, MacOS</p>
       </div>
     </div>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    // ========== CEK SESSION ==========
+    (async function checkSession() {
+      try {
+        const res = await fetch('/api/check-session');
+        const data = await res.json();
+        if (!data.loggedIn) {
+          window.location.replace('/');
+        } else {
+          document.getElementById('userName').textContent = data.user || 'Dale Andrews';
+          updateStatus();
+        }
+      } catch (e) {
+        window.location.replace('/');
+      }
+    })();
+
+    // ========== NAVIGASI ==========
+    document.querySelectorAll('.sidebar nav ul li[data-menu]').forEach(el => {
+      el.addEventListener('click', function() {
+        const menu = this.dataset.menu;
+        if (menu === 'logout') {
+          fetch('/api/logout').then(() => window.location.replace('/'));
+          return;
+        }
+        document.querySelectorAll('.menu-content').forEach(m => m.classList.remove('active'));
+        document.getElementById('menu-' + menu).classList.add('active');
+        document.querySelectorAll('.sidebar nav ul li').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // ========== PAIRING ==========
+    async function pairDevice() {
+      const num = document.getElementById('senderNumber').value;
+      if (!num.startsWith('62')) { alert('NOMOR HARUS 62xxx!'); return; }
+      const res = await fetch('/api/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: num })
+      });
+      const data = await res.json();
+      const el = document.getElementById('pairResult');
+      if (data.success) {
+        el.className = '';
+        el.innerHTML = '✅ PAIRING CODE: ' + data.pairingCode;
+      } else {
+        el.className = 'error';
+        el.innerHTML = '❌ ERROR: ' + data.error;
+      }
+      updateStatus();
+    }
+
+    // ========== EKSEKUSI ==========
+    async function executeForce() {
+      const target = document.getElementById('targetNumber').value;
+      if (!target.startsWith('62')) { alert('TARGET HARUS 62xxx!'); return; }
+      const res = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target })
+      });
+      const data = await res.json();
+      const el = document.getElementById('execResult');
+      if (data.success) {
+        el.className = '';
+        el.innerHTML = '🔥 ' + data.message;
+      } else {
+        el.className = 'error';
+        el.innerHTML = '❌ ERROR: ' + data.error;
+      }
+      updateStatus();
+    }
+
+    // ========== UPDATE STATUS ==========
+    async function updateStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const statusEl = document.getElementById('waStatus');
+        if (data.connected) {
+          statusEl.textContent = '✅ ONLINE';
+          statusEl.style.color = '#0f0';
+        } else {
+          statusEl.textContent = '❌ OFFLINE';
+          statusEl.style.color = '#ff0000';
+        }
+      } catch(e) {}
+    }
+
+    setInterval(updateStatus, 10000);
+  </script>
 </body>
-</html>
+        </html>
